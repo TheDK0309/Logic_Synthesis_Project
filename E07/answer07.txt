@@ -1,0 +1,50 @@
++ Bit clock frequency:
+
+	constant min_bclk_period_c        : integer := 75; + ns, read from datasheet - page 25.
+	==> Bit clock frequency = 1/75 = 13.33333 MHz
+
++ Limit values of the clock divider counters and how they were derived:
+
+	- Calculate required number of steps to bclk counter. (Edited)
+	Previous answer:
+	constant one_second_to_nanos_c    : integer := 1000000000;
+	constant bclk_counter_steps_c : integer := (min_bclk_period_c / (one_second_to_nanos_c / ref_clk_freq_g) / 2) + 1;
+	--(Just in case of division is exact, one more step is make safe border or add to round up.)
+
+	New answer:
+	From entity: we can get:
+		ref_clk_freq_g : integer := 12288000;
+		sample_rate_g  : integer := 48000;
+		data_width_g   : integer := 16
+
+	constant lrclk_counter_steps_c : integer := ref_clk_freq_g / sample_rate_g / 2;
+	constant bclk_counter_steps_c : integer := lrclk_counter_steps_c / data_width_g / 2;
+	
+	- Sampling frequency is lrclk frequency.
+	constant lrclk_counter_steps_c : integer := ref_clk_freq_g / sample_rate_g / 2;
+
+	- Registers for samples and currently transmitted bit index.
+	signal left_sample_r, right_sample_r : std_logic_vector(data_width_g - 1 downto 0);
+	signal bit_index_r                   : integer range -1 to data_width_g - 1;
+
+	- Counters for generated clocks.
+	signal bclk_counter_r  : integer range 0 to bclk_counter_steps_c - 1;
+	signal lrclk_counter_r : integer range 0 to lrclk_counter_steps_c - 1;
+
+	- Registers for outputs
+	signal bclk_r, lrclk_r, data_out_r : std_logic;
+
+
++ Summary of the controller's process
+
+	Architecture will hava only one single synchronous process:
+	- On the rising edge of the clock, the value of lrclk_counter_r is checked:
+		+ If lrclk_counter_r is not max value, it is increased
+		+ If lrclk_counter_r is max value, it will be reset.
+		
+		When reset lrclk_counter_r, the lrclk_r will be inverted. 
+		If lrclk_r is 0, so it is rising edge of lrclk, samples will be read from data inputs to registers.
+
+	- Bclk also will be generated in similar method. On rising edge of bclk, 
+		+ If bit_index_r is not equal to -1, bit_index_r is decreased and next transmitted bit from the sample.
+	- State of lrclk_r also wil be checked to choose correct channel to transmit.

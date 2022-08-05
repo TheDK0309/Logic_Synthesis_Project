@@ -1,0 +1,15 @@
++ Our fsm will contain these following states:
+	- Start: begin of process, wait for correct condition to move to next state else keep staying at this stage.
+	- Get_slave_address: get the address of slave.
+	- Wait ack: Checking ack:
+		* if ACK, move to next state to start transmitting.
+		* if NACK, restart process.
+	- Reg_address_transmitt: transmitt register address [15:8] then back to wait ack.
+	- Value_transmitt: trasmitt value of above registers and also back to wait ack.
+	- After finish transfer value, process will move to Stop state to check stop condition.
+	- If data still available, back to check start condition else finish the process.
+ 
+
++ Configuration value DAI_CTRL. Address found from page 62 and values from page 76.
+  Address: 0x29 (0010 1001)
+  Value: 1000 0001

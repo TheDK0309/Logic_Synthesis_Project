@@ -1,0 +1,6 @@
+vhdl xil_defaultlib  \
+"../../../bd/system_top_level/ip/system_top_level_i2c_config_0_0/sim/system_top_level_i2c_config_0_0.vhd" \
+"../../../bd/system_top_level/ip/system_top_level_synthesizer_0_0/sim/system_top_level_synthesizer_0_0.vhd" \
+"../../../bd/system_top_level/sim/system_top_level.vhd" \
+
+nosort
